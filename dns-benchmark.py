@@ -14,7 +14,7 @@ from multiprocessing import Pool
 encoding = "utf-8"
 dig = "/usr/bin/dig"
 re_dig_answer_count = re.compile(", ANSWER: (\d+),")
-re_dig_query_time = re.compile(";; Query time: (\d+) msec")
+re_dig_query_time = re.compile(";; Query time: (\d+) usec")
 
 
 def parse_alexa_top_csv(f, n):
@@ -55,24 +55,24 @@ def benchmark_dns(args):
 	dig_cmd = dig
 	if dns != "system":
 		dig_cmd += " @" + dns
-	dig_cmd += " -f " + domains_file
+	dig_cmd += " -u -f " + domains_file
 
 	errors = 0
-	dig_msec = 0
+	dig_usec = 0
 	count = 0
 
 	t0 = time.clock_gettime(time.CLOCK_MONOTONIC_RAW)
 	dig_proc = os.popen(dig_cmd)
 	for answer_count, msec in parse_dig_output(dig_proc):
 		errors += not answer_count
-		dig_msec += msec
+		dig_usec += msec
 		count += 1
 	t1 = time.clock_gettime(time.CLOCK_MONOTONIC_RAW)
 	dig_rc = dig_proc.close()
 	if dig_rc:
 		print("{}: dig terminated with {}.".format(dns, dig_rc), file=sys.stderr)
 
-	return count, errors, dig_msec, t1 - t0
+	return count, errors, dig_usec, t1 - t0
 
 
 def main():
@@ -102,8 +102,8 @@ def main():
 		results = Pool(len(dnss)).map(benchmark_dns, zip(dnss, [domains_file.name] * len(dnss)))
 
 	print("            dns,    time,    queries,     errors")
-	for dns, (count, errors, dig_msec, total_sec) in zip(dnss, results):
-		print("{:>15s}, {:7.3f}, {:10}, {:10}".format(dns, dig_msec * 1e-3, count, errors))
+	for dns, (count, errors, dig_usec, total_sec) in zip(dnss, results):
+		print("{:>15s}, {:7.3f}, {:10}, {:10}".format(dns, dig_usec * 1e-6, count, errors))
 
 
 if __name__ == "__main__":
