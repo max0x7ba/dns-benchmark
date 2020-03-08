@@ -1,4 +1,9 @@
 #!/usr/bin/env python3
+
+
+# Copyright (c) 2020 Maxim Egorushkin. MIT License. See the full licence in file LICENSE.
+
+
 import sys, os, re, time
 from argparse import ArgumentParser
 from tempfile import NamedTemporaryFile
@@ -7,6 +12,9 @@ from multiprocessing import Pool
 
 
 encoding = "utf-8"
+dig = "/usr/bin/dig"
+re_dig_answer_count = re.compile(", ANSWER: (\d+),")
+re_dig_query_time = re.compile(";; Query time: (\d+) msec")
 
 
 def parse_alexa_top_csv(f, n):
@@ -20,16 +28,13 @@ def parse_alexa_top_csv(f, n):
 				break
 
 
-re_dig_answer_count = re.compile(", ANSWER: (\d+),")
-re_query_time = re.compile(";; Query time: (\d+) msec")
-
 def parse_dig_output(f):
 	for line in f:
 		m = re_dig_answer_count.search(line)
 		if m:
 			answer_count = int(m.group(1))
 			continue
-		m = re_query_time.match(line)
+		m = re_dig_query_time.match(line)
 		if m:
 			msec = int(m.group(1))
 			yield answer_count, msec
@@ -43,8 +48,6 @@ def write_all(f, data):
 			break
 		data = data[written:]
 
-
-dig = "/usr/bin/dig"
 
 def benchmark_dns(args):
 	dns, domains_file = args
