@@ -71,7 +71,7 @@ def benchmark_dns(args):
 	t1 = time.clock_gettime(time.CLOCK_MONOTONIC_RAW)
 	dig_rc = dig_proc.close()
 	if dig_rc:
-		print("{}: dig terminated with {}.".format(dns, dig_rc), file=sys.stderr)
+		print("{}: dig terminated with code {}.".format(dns, dig_rc), file=sys.stderr)
 
 	return count, errors, dig_usec, t1 - t0
 
@@ -82,6 +82,8 @@ def main():
 						help="The number of requests to make, 0 means no limit. Default is %(default)s.")
 	parser.add_argument("-s", "--dns", default="system", metavar="IP",
 						help="A comma-separated list of DNS server IP addresses. Default is %(default)s.")
+	parser.add_argument("-S", "--serial", default=False, action="store_true",
+						help="Don't query in parallel.")
 	args = parser.parse_args()
 
 	# Download Alexa top websites csv.
@@ -98,9 +100,13 @@ def main():
 			write_all(domains_file, domain + '\n')
 		domains_file.flush()
 
-		# Run benchmarks for different dns in parallel.
 		dnss = [s.strip() for s in args.dns.split(',')]
-		results = Pool(len(dnss)).map(benchmark_dns, zip(dnss, [domains_file.name] * len(dnss)))
+		benchmark_dns_args = zip(dnss, [domains_file.name] * len(dnss))
+		if args.serial:
+			results = map(benchmark_dns, benchmark_dns_args)
+		else:
+			results = Pool(len(dnss)).map(benchmark_dns, benchmark_dns_args) # Run benchmarks for different dns in parallel.
+		results = list(results)
 
 	print("            dns,    time,    queries,     errors")
 	for dns, (count, errors, dig_usec, total_sec) in zip(dnss, results):
