@@ -36,8 +36,8 @@ def parse_dig_output(f):
 			continue
 		m = re_dig_query_time.match(line)
 		if m:
-			msec = int(m.group(1))
-			yield answer_count, msec
+			usec = int(m.group(1))
+			yield answer_count, usec
 
 
 def write_all(f, data):
@@ -63,9 +63,9 @@ def benchmark_dns(args):
 
 	t0 = time.clock_gettime(time.CLOCK_MONOTONIC_RAW)
 	dig_proc = os.popen(dig_cmd)
-	for answer_count, msec in parse_dig_output(dig_proc):
+	for answer_count, usec in parse_dig_output(dig_proc):
 		errors += not answer_count
-		dig_usec += msec
+		dig_usec += usec
 		count += 1
 	t1 = time.clock_gettime(time.CLOCK_MONOTONIC_RAW)
 	dig_rc = dig_proc.close()
