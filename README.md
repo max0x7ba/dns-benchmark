@@ -31,7 +31,7 @@ optional arguments:
   -s IP, --dns IP       A comma-separated list of DNS server IP addresses. Default is system.
 ```
 
-In the following example I measure the latencies of Google (8.8.8.8), Cloudflare (1.1.1.1), ISP (81.139.57.100), router (192.168.50.1) and system DNSs:
+In the following example I measure the latencies of Google (8.8.8.8), Cloudflare (1.1.1.1), ISP (81.139.57.100), router (192.168.50.1) and system DNSs. The time is reported in seconds.
 
 ```
 $ ./dns-benchmark.py --dns 8.8.8.8,1.1.1.1,81.139.57.100
@@ -40,10 +40,12 @@ It may take minutes, please wait...
         8.8.8.8,  71.601,       1000,         16
         1.1.1.1,  24.080,       1000,         16
   81.139.57.100, 130.268,       1000,         16
+
 $ ./dns-benchmark.py --dns 192.168.50.1
 It may take minutes, please wait...
             dns,    time,    queries,     errors
    192.168.50.1,  42.669,       1000,         16
+
 $ ./dns-benchmark.py
 It may take minutes, please wait...
             dns,    time,    queries,     errors
