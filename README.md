@@ -8,7 +8,7 @@ It measures the total time it takes to make DNS queries for Alexa top 1000 websi
 $ git clone https://github.com/max0x7ba/dns-benchmark.git
 $ cd dns-benchmark
 $ ./dns-benchmark.py -h
-usage: dns-benchmark.py [-h] [-n COUNT] [-s IP]
+usage: dns-benchmark.py [-h] [-n COUNT] [-s IP] [-S]
 
 Benchmark DNS query time.
 
@@ -17,6 +17,7 @@ optional arguments:
   -n COUNT, --count COUNT
                         The number of requests to make, 0 means no limit. Default is 1000.
   -s IP, --dns IP       A comma-separated list of DNS server IP addresses. Default is system.
+  -S, --serial          Don't query in parallel.
 ```
 
 In the following example I measure the latencies of Google (8.8.8.8), Cloudflare (1.1.1.1), ISP (81.139.57.100), router (192.168.50.1) and system DNSs. The time is reported in seconds.
@@ -32,7 +33,16 @@ It may take minutes, please wait...
          system,  21.134,       1000,         17
 ```
 
-In my setup system and router (192.168.50.1) DNS use Cloudflare DNS and this is why their times are similar.
+In my setup, system and router (192.168.50.1) DNS use Cloudflare DNS and this is why their times are similar.
+
+# Portability
+The script requires Python 3 and `dig` command line utility.
+
+It has been tested on:
+
+* [Ubuntu Linux 18.04 LTS](https://ubuntu.com/download/desktop).
+* Windows 10 with [Windows Subsystem for Linux](https://docs.microsoft.com/en-us/windows/wsl/install-win10) and Ubuntu Linux 18.04 LTS.
+* Android 10 phone with [Termux](https://termux.com/) terminal emulator. Requires installing `git`, `dig`, `python` in Termux and using `--serial` command line option.
 
 ---
 
