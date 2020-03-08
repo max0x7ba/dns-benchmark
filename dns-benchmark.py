@@ -5,11 +5,11 @@
 
 
 import sys, os, re, time
+import urllib.request
 from argparse import ArgumentParser
 from tempfile import NamedTemporaryFile
 from zipfile import ZipFile
 from multiprocessing import Pool
-
 
 encoding = "utf-8"
 dig = "/usr/bin/dig"
@@ -41,7 +41,8 @@ def parse_dig_output(f):
 
 
 def write_all(f, data):
-	data = data.encode(encoding)
+	if not isinstance(data, bytes):
+		data = data.encode(encoding)
 	while True:
 		written = f.write(data)
 		if written == len(data):
@@ -86,7 +87,7 @@ def main():
 	# Download Alexa top websites csv.
 	alexa_top_csv = "top-1m.csv.zip"
 	if not os.access(alexa_top_csv, os.R_OK):
-		os.system("wget -O {0} http://s3.amazonaws.com/alexa-static/{0}".format(alexa_top_csv))
+		urllib.request.urlretrieve("http://s3.amazonaws.com/alexa-static/" + alexa_top_csv, alexa_top_csv)
 
 	if args.count >= 100:
 		print("It may take minutes, please wait...")
