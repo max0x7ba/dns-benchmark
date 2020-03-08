@@ -3,7 +3,7 @@ DNS query response latency benchmark.
 
 It measures the total time it takes to make DNS queries for Alexa top 1000 websites. The queries are done sequentially to measure the worst case latency rather than throughput.
 
-It uses [`dig`](https://en.wikipedia.org/wiki/Dig_(command) to make and time DNS queries to specific dns servers.
+It uses `dig` command to make and time DNS queries to specific dns servers.
 
 There are normally a few layers of DNS caching, depending on one's network setup:
 
