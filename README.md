@@ -33,3 +33,7 @@ It may take minutes, please wait...
 ```
 
 In my setup system and router (192.168.50.1) DNS use Cloudflare DNS and this is why their times are similar.
+
+---
+
+Copyright (c) 2020 Maxim Egorushkin. MIT License. See the full licence in file LICENSE.
