@@ -32,7 +32,7 @@ It may take minutes, please wait...
          system,  13.443,       1000,         15
 ```
 
-In my setup, system and router (192.168.50.1) DNS use Cloudflare DNS and this is why their times are similar. The router times are the best because it runs `dnsmasq` that caches DNS responses and is able to resolve queries locally.
+In my setup, system and router (192.168.50.1) DNS use Cloudflare DNS and this is why their times are similar. The router times are the best because it runs `dnsmasq` that caches DNS responses and is able to resolve some of the queries locally.
 
 # Portability
 The script requires Python 3 and `dig` command line utility.
