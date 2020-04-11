@@ -20,20 +20,19 @@ optional arguments:
   -S, --serial          Don't query in parallel.
 ```
 
-In the following example I measure the latencies of Google (8.8.8.8), Cloudflare (1.1.1.1), ISP (81.139.57.100), router (192.168.50.1) and system DNSs. The time is reported in seconds.
+In the following example I measure the latencies of Google (8.8.8.8), Cloudflare (1.1.1.1), router (192.168.50.1) and system DNSs. The time is reported in seconds.
 
 ```
-$ ./dns-benchmark.py --dns 8.8.8.8,1.1.1.1,81.139.57.100,192.168.50.1,system
+$ ./dns-benchmark.py --dns 8.8.8.8,1.1.1.1,192.168.50.1,system
 It may take minutes, please wait...
             dns,    time,    queries,     errors
-        8.8.8.8,  72.517,       1000,         17
-        1.1.1.1,  20.850,       1000,         17
-  81.139.57.100, 127.110,       1000,         17
-   192.168.50.1,  21.186,       1000,         17
-         system,  21.134,       1000,         17
+        8.8.8.8,  56.633,       1000,         16
+        1.1.1.1,  12.089,       1000,         15
+   192.168.50.1,   8.679,       1000,         15
+         system,  13.443,       1000,         15
 ```
 
-In my setup, system and router (192.168.50.1) DNS use Cloudflare DNS and this is why their times are similar.
+In my setup, system and router (192.168.50.1) DNS use Cloudflare DNS and this is why their times are similar. The router times are the best because it runs `dnsmasq` that caches DNS responses and is able to resolve queries locally.
 
 # Portability
 The script requires Python 3 and `dig` command line utility.
