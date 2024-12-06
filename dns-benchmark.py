@@ -6,26 +6,26 @@
 
 import sys, os, re, time
 import urllib.request
+import csv
 from argparse import ArgumentParser
 from tempfile import NamedTemporaryFile
-from zipfile import ZipFile
 from multiprocessing import Pool
 
 encoding = "utf-8"
 dig = "/usr/bin/dig"
-re_dig_answer_count = re.compile(", ANSWER: (\d+),")
-re_dig_query_time = re.compile(";; Query time: (\d+) usec")
+re_dig_answer_count = re.compile(r", ANSWER: (\d+),")
+re_dig_query_time = re.compile(r";; Query time: (\d+) usec")
 
 
-def parse_alexa_top_csv(f, n):
-	for line in f:
-		line = line.decode(encoding)
-		domain = line[line.index(",") + 1:].strip() # Extract the 2nd column of the csv only.
-		yield domain
-		if n > 0:
-			n -= 1
-			if not n:
-				break
+def parse_majestic_million_csv(f, n):
+	with open(f, newline='') as csvfile:
+		reader = csv.DictReader(csvfile)
+		for row in reader:
+			yield row['Domain']
+			if n > 0:
+				n -= 1
+				if not n:
+					break
 
 
 def parse_dig_output(f):
@@ -86,17 +86,18 @@ def main():
 						help="Don't query in parallel.")
 	args = parser.parse_args()
 
-	# Download Alexa top websites csv.
-	alexa_top_csv = "top-1m.csv.zip"
-	if not os.access(alexa_top_csv, os.R_OK):
-		urllib.request.urlretrieve("http://s3.amazonaws.com/alexa-static/" + alexa_top_csv, alexa_top_csv)
+	# Download Majestic Million csv.
+	majestic_million_csv = "majestic_million.csv"
+	base = "https://downloads.majesticseo.com/"
+	if not os.access(majestic_million_csv, os.R_OK):
+		urllib.request.urlretrieve(base + majestic_million_csv, majestic_million_csv)
 
 	if args.count >= 100:
 		print("It may take minutes, please wait...")
 
 	# To invoke dig only once per dns make a temporary file with all the domain names for dig to query.
 	with NamedTemporaryFile(buffering=(1024 * 1024)) as domains_file:
-		for domain in parse_alexa_top_csv(ZipFile(alexa_top_csv).open(alexa_top_csv.rstrip(".zip")), args.count):
+		for domain in parse_majestic_million_csv(majestic_million_csv, args.count):
 			write_all(domains_file, domain + '\n')
 		domains_file.flush()
 
