@@ -40,8 +40,11 @@ The script requires Python 3 and `dig` command line utility.
 It has been tested on:
 
 * [Ubuntu Linux 18.04 LTS](https://ubuntu.com/download/desktop).
+* [Ubuntu Linux 22.04 LTS](https://ubuntu.com/download/desktop).
 * Windows 10 with [Windows Subsystem for Linux](https://docs.microsoft.com/en-us/windows/wsl/install-win10) and Ubuntu Linux 18.04 LTS.
 * Android 10 phone with [Termux](https://termux.com/) terminal emulator. Requires installing `git`, `dig`, `python` in Termux and using `--serial` command line option.
+* [macOS 10.15](https://en.wikipedia.org/wiki/MacOS_Catalina)
+* [macOS 15](https://en.wikipedia.org/wiki/MacOS_Sequoia)
 
 ---
 
