@@ -18,24 +18,20 @@ re_dig_query_time = re.compile(r";; Query time: (\d+) usec")
 
 
 def parse_majestic_million_csv(f, n):
+	n = n if n > 0 else sys.maxsize
 	with open(f, newline='') as csvfile:
 		reader = csv.DictReader(csvfile)
-		for row in reader:
+		for i, row in enumerate(reader, 1):
 			yield row['Domain']
-			if n > 0:
-				n -= 1
-				if not n:
-					break
+			if i >= n:
+				break
 
 
 def parse_dig_output(f):
 	for line in f:
-		m = re_dig_answer_count.search(line)
-		if m:
+		if m := re_dig_answer_count.search(line):
 			answer_count = int(m.group(1))
-			continue
-		m = re_dig_query_time.match(line)
-		if m:
+		elif m := re_dig_query_time.match(line):
 			usec = int(m.group(1))
 			yield answer_count, usec
 
@@ -43,10 +39,8 @@ def parse_dig_output(f):
 def write_all(f, data):
 	if not isinstance(data, bytes):
 		data = data.encode(encoding)
-	while True:
+	while data:
 		written = f.write(data)
-		if written == len(data):
-			break
 		data = data[written:]
 
 
@@ -93,7 +87,7 @@ def main():
 		urllib.request.urlretrieve(base + majestic_million_csv, majestic_million_csv)
 
 	if args.count >= 100:
-		print("It may take minutes, please wait...")
+		print(f"Making {args.count:,} DNS queries may take minutes, please wait...")
 
 	# To invoke dig only once per dns make a temporary file with all the domain names for dig to query.
 	with NamedTemporaryFile(buffering=(1024 * 1024)) as domains_file:
@@ -102,7 +96,7 @@ def main():
 		domains_file.flush()
 
 		dnss = [s.strip() for s in args.dns.split(',')]
-		benchmark_dns_args = zip(dnss, [domains_file.name] * len(dnss))
+		benchmark_dns_args = zip(dnss, [domains_file.name] * len(dnss), strict=True)
 		if args.serial:
 			results = map(benchmark_dns, benchmark_dns_args)
 		else:
