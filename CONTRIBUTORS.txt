@@ -1,0 +1,3 @@
+Contributors:
+
+- Joel Studler (https://github.com/max0x7ba/dns-benchmark/pull/1)
