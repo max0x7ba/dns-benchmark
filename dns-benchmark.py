@@ -109,9 +109,9 @@ def main():
 			results = Pool(len(dnss)).map(benchmark_dns, benchmark_dns_args) # Run benchmarks for different dns in parallel.
 		results = list(results)
 
-	print("            dns,    time,    queries,     errors")
+	print("            dns,     time,    queries,     errors")
 	for dns, (count, errors, dig_usec, total_sec) in zip(dnss, results):
-		print("{:>15s}, {:7.3f}, {:10}, {:10}".format(dns, dig_usec * 1e-6, count, errors))
+		print("{:>15s}, {:7,.3f}s, {:10,}, {:10,}".format(dns, dig_usec * 1e-6, count, errors))
 
 
 if __name__ == "__main__":
@@ -123,4 +123,5 @@ if __name__ == "__main__":
 # tab-width: 4
 # indent-tabs-mode: t
 # coding: utf-8
+# compile-command: "cd ~/src/dns-benchmark && ./dns-benchmark.py --dns 8.8.8.8,1.1.1.1,192.168.50.1,system -n 2"
 # End:
