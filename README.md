@@ -47,10 +47,12 @@ It has been tested on:
 
 * [Ubuntu Linux 18.04 LTS](https://ubuntu.com/download/desktop).
 * [Ubuntu Linux 22.04 LTS](https://ubuntu.com/download/desktop).
+* [Fedora 41](https://fedoramagazine.org/announcing-fedora-linux-41/).
 * Windows 10 with [Windows Subsystem for Linux](https://docs.microsoft.com/en-us/windows/wsl/install-win10) and Ubuntu Linux 18.04 LTS.
 * Android 10 phone with [Termux](https://termux.com/) terminal emulator. Requires installing `git`, `dig`, `python` in Termux and using `--serial` command line option.
 * [macOS 10.15](https://en.wikipedia.org/wiki/MacOS_Catalina)
 * [macOS 15](https://en.wikipedia.org/wiki/MacOS_Sequoia)
+* [FreeBSD 13.4](https://www.freebsd.org/releases/13.4R/announce/).
 
 ---
 
