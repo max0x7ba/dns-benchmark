@@ -4,15 +4,21 @@
 # Copyright (c) 2020 Maxim Egorushkin. MIT License. See the full licence in file LICENSE.
 
 
-import sys, os, re, time
+import sys, os, re, time, subprocess
 import urllib.request
 import csv
 from argparse import ArgumentParser
 from tempfile import NamedTemporaryFile
 from multiprocessing import Pool
 
+def get_dig_path():
+	cmd_result = subprocess.run(["which", "dig"], capture_output=True, text=True)
+	if cmd_result.returncode != 0:
+		raise OSError(cmd_result.stderr)
+	return cmd_result.stdout.strip()
+
 encoding = "utf-8"
-dig = "/usr/bin/dig"
+dig = get_dig_path()
 re_dig_answer_count = re.compile(r", ANSWER: (\d+),")
 re_dig_query_time = re.compile(r";; Query time: (\d+) usec")
 
