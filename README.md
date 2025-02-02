@@ -5,9 +5,10 @@ It measures the total time it takes to make DNS queries for Alexa top 1000 websi
 
 # Usage
 ```bash
-git clone https://github.com/max0x7ba/dns-benchmark.git
-cd dns-benchmark
-./dns-benchmark.py -h
+git clone https://github.com/max0x7ba/dns-benchmark.git   # clone the repo
+cd dns-benchmark                                          # go into cloned directory
+chmod +x dns-benchmark.py                                 # make the file executable
+./dns-benchmark.py -h                                     # display help
 ```
 ```
 (output - do not copy)
