@@ -62,13 +62,13 @@ def benchmark_dns(args):
 	dig_usec = 0
 	count = 0
 
-	t0 = time.clock_gettime(time.CLOCK_MONOTONIC_RAW)
+	t0 = time.clock_gettime(time.CLOCK_MONOTONIC)
 	dig_proc = os.popen(dig_cmd)
 	for answer_count, usec in parse_dig_output(dig_proc):
 		errors += not answer_count
 		dig_usec += usec
 		count += 1
-	t1 = time.clock_gettime(time.CLOCK_MONOTONIC_RAW)
+	t1 = time.clock_gettime(time.CLOCK_MONOTONIC)
 	dig_rc = dig_proc.close()
 	if dig_rc:
 		print("{}: dig terminated with code {}.".format(dns, dig_rc), file=sys.stderr)
