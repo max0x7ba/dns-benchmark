@@ -4,10 +4,13 @@ DNS query response latency benchmark.
 It measures the total time it takes to make DNS queries for Alexa top 1000 websites. The queries are done sequentially to measure the worst case latency rather than throughput. `dig` command is used to make and time DNS queries to specific DNS servers.
 
 # Usage
+```bash
+git clone https://github.com/max0x7ba/dns-benchmark.git
+cd dns-benchmark
+./dns-benchmark.py -h
 ```
-$ git clone https://github.com/max0x7ba/dns-benchmark.git
-$ cd dns-benchmark
-$ ./dns-benchmark.py -h
+```
+(output - do not copy)
 usage: dns-benchmark.py [-h] [-n COUNT] [-s IP] [-S]
 
 Benchmark DNS query time.
@@ -22,8 +25,11 @@ optional arguments:
 
 In the following example I measure the latencies of Google (8.8.8.8), Cloudflare (1.1.1.1), router (192.168.50.1) and system DNSs. The time is reported in seconds.
 
+```bash
+./dns-benchmark.py --dns 8.8.8.8,1.1.1.1,192.168.50.1,system
 ```
-$ ./dns-benchmark.py --dns 8.8.8.8,1.1.1.1,192.168.50.1,system
+```
+(output - do not copy)
 It may take minutes, please wait...
             dns,    time,    queries,     errors
         8.8.8.8,  56.633,       1000,         16
