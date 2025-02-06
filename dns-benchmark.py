@@ -4,7 +4,7 @@
 # Copyright (c) 2020 Maxim Egorushkin. MIT License. See the full licence in file LICENSE.
 
 
-import sys, os, re, time, subprocess
+import sys, os, re, time, shutil
 import urllib.request
 import csv
 from argparse import ArgumentParser
@@ -12,10 +12,10 @@ from tempfile import NamedTemporaryFile
 from multiprocessing import Pool
 
 def get_dig_path():
-	cmd_result = subprocess.run(["which", "dig"], capture_output=True, text=True)
-	if cmd_result.returncode != 0:
-		raise OSError(cmd_result.stderr)
-	return cmd_result.stdout.strip()
+	cmd_result = shutil.which("dig")
+	if cmd_result == None:
+		raise OSError("dig tool not found")
+	return cmd_result
 
 encoding = "utf-8"
 dig = get_dig_path()
