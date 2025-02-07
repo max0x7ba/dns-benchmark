@@ -4,15 +4,21 @@
 # Copyright (c) 2020 Maxim Egorushkin. MIT License. See the full licence in file LICENSE.
 
 
-import sys, os, re, time
+import sys, os, re, time, shutil
 import urllib.request
 import csv
 from argparse import ArgumentParser
 from tempfile import NamedTemporaryFile
 from multiprocessing import Pool
 
+def get_dig_path():
+	cmd_result = shutil.which("dig")
+	if cmd_result == None:
+		raise OSError("dig tool not found")
+	return cmd_result
+
 encoding = "utf-8"
-dig = "/usr/bin/dig"
+dig = get_dig_path()
 re_dig_answer_count = re.compile(r", ANSWER: (\d+),")
 re_dig_query_time = re.compile(r";; Query time: (\d+) usec")
 
@@ -56,13 +62,13 @@ def benchmark_dns(args):
 	dig_usec = 0
 	count = 0
 
-	t0 = time.clock_gettime(time.CLOCK_MONOTONIC_RAW)
+	t0 = time.clock_gettime(time.CLOCK_MONOTONIC)
 	dig_proc = os.popen(dig_cmd)
 	for answer_count, usec in parse_dig_output(dig_proc):
 		errors += not answer_count
 		dig_usec += usec
 		count += 1
-	t1 = time.clock_gettime(time.CLOCK_MONOTONIC_RAW)
+	t1 = time.clock_gettime(time.CLOCK_MONOTONIC)
 	dig_rc = dig_proc.close()
 	if dig_rc:
 		print("{}: dig terminated with code {}.".format(dns, dig_rc), file=sys.stderr)
