@@ -1,3 +1,4 @@
 Contributors:
 
 - Joel Studler (https://github.com/max0x7ba/dns-benchmark/pull/1)
+- vr-ski (https://github.com/max0x7ba/dns-benchmark/pull/2)
