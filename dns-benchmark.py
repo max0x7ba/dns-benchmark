@@ -4,12 +4,15 @@
 # Copyright (c) 2020 Maxim Egorushkin. MIT License. See the full licence in file LICENSE.
 
 
-import sys, os, re, time, shutil
+import sys, os, re, time, shutil, io
 import urllib.request
 import csv
 from argparse import ArgumentParser
 from tempfile import NamedTemporaryFile
 from multiprocessing import Pool
+import multiprocessing
+from subprocess import Popen, PIPE
+
 
 def get_dig_path():
 	cmd_result = shutil.which("dig")
@@ -17,10 +20,11 @@ def get_dig_path():
 		raise OSError("dig tool not found")
 	return cmd_result
 
+
 encoding = "utf-8"
 dig = get_dig_path()
-re_dig_answer_count = re.compile(r", ANSWER: (\d+),")
-re_dig_query_time = re.compile(r";; Query time: (\d+) usec")
+re_dig_answer_count = re.compile(rb", ANSWER: (\d+),")
+re_dig_query_time = re.compile(rb";; Query time: (\d+) usec")
 
 
 def parse_majestic_million_csv(f, n):
@@ -42,6 +46,17 @@ def parse_dig_output(f):
 			yield answer_count, usec
 
 
+def parse_dig_outputs(dig_out_file):
+	dig_usec = 0
+	count = 0
+	errors = 0
+	for answer_count, usec in parse_dig_output(dig_out_file):
+		errors += not answer_count
+		dig_usec += usec
+		count += 1
+	return count, errors, dig_usec
+
+
 def write_all(f, data):
 	if not isinstance(data, bytes):
 		data = data.encode(encoding)
@@ -50,30 +65,47 @@ def write_all(f, data):
 		data = data[written:]
 
 
-def benchmark_dns(args):
-	dns, domains_file = args
+def format_dig_cmd(args):
+	dns, (domains_file, tls) = args
 
-	dig_cmd = dig
+	dig_cmd = [dig]
+	if tls:
+		dig_cmd += ["+tls", "+notls-ca"]
 	if dns != "system":
-		dig_cmd += " @" + dns
-	dig_cmd += " -u -f " + domains_file
+		dig_cmd += ["@" + dns]
+	dig_cmd += ["-u", "-f", domains_file]
 
-	errors = 0
-	dig_usec = 0
-	count = 0
+	return dig_cmd, dns
+
+
+def benchmark_dns_file(args):
+	dig_cmd, dns = format_dig_cmd(args)
+
+	with NamedTemporaryFile() as dig_out_file:
+		t0 = time.clock_gettime(time.CLOCK_MONOTONIC)
+		# Save dig outputs into a file.
+		with Popen(dig_cmd, stdout=dig_out_file) as dig_proc:
+			dig_rc = dig_proc.wait()
+			t1 = time.clock_gettime(time.CLOCK_MONOTONIC_RAW)
+		if dig_rc:
+			print("{}: dig terminated with code {}.".format(dns, dig_rc), file=sys.stderr)
+
+		# Parse dig outputs after dig completes.
+		dig_out_file.seek(0)
+		return *parse_dig_outputs(dig_out_file), t1 - t0
+
+
+def benchmark_dns_pipe(args):
+	dig_cmd, dns = format_dig_cmd(args)
 
 	t0 = time.clock_gettime(time.CLOCK_MONOTONIC)
-	dig_proc = os.popen(dig_cmd)
-	for answer_count, usec in parse_dig_output(dig_proc):
-		errors += not answer_count
-		dig_usec += usec
-		count += 1
-	t1 = time.clock_gettime(time.CLOCK_MONOTONIC)
-	dig_rc = dig_proc.close()
-	if dig_rc:
-		print("{}: dig terminated with code {}.".format(dns, dig_rc), file=sys.stderr)
+	# Save dig outputs into memory.
+	with Popen(dig_cmd, stdout=PIPE) as dig_proc:
+		dig_proc_out = dig_proc.stdout.read(-1)
+		t1 = time.clock_gettime(time.CLOCK_MONOTONIC)
 
-	return count, errors, dig_usec, t1 - t0
+	# Parse dig outputs after dig completes.
+	return *parse_dig_outputs(io.BytesIO(dig_proc_out)), t1 - t0
 
 
 def main():
@@ -82,8 +114,12 @@ def main():
 						help="The number of requests to make, 0 means no limit. Default is %(default)s.")
 	parser.add_argument("-s", "--dns", default="system", metavar="IP",
 						help="A comma-separated list of DNS server IP addresses. Default is %(default)s.")
-	parser.add_argument("-S", "--serial", default=False, action="store_true",
+	parser.add_argument("-S", "--serial", action="store_true",
 						help="Don't query in parallel.")
+	parser.add_argument("-F", "--tmp", action="store_true",
+						help="Use temporary files instead of pipes for more accurate timing of dig.")
+	parser.add_argument("-T", "--tls", action="store_true",
+						help="Use DNS-over-TLS queries.")
 	args = parser.parse_args()
 
 	# Download Majestic Million csv.
@@ -95,6 +131,8 @@ def main():
 	if args.count >= 100:
 		print(f"Making {args.count:,} DNS queries may take minutes, please wait...")
 
+	benchmark_dns = benchmark_dns_file if args.tmp else benchmark_dns_pipe
+
 	# To invoke dig only once per dns make a temporary file with all the domain names for dig to query.
 	with NamedTemporaryFile(buffering=(1024 * 1024)) as domains_file:
 		for domain in parse_majestic_million_csv(majestic_million_csv, args.count):
@@ -102,7 +140,7 @@ def main():
 		domains_file.flush()
 
 		dnss = [s.strip() for s in args.dns.split(',')]
-		benchmark_dns_args = zip(dnss, [domains_file.name] * len(dnss), strict=True)
+		benchmark_dns_args = zip(dnss, [(domains_file.name, args.tls)] * len(dnss), strict=True)
 		if args.serial:
 			results = map(benchmark_dns, benchmark_dns_args)
 		else:
